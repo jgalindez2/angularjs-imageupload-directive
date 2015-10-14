@@ -1,4 +1,4 @@
-angular.module('imageupload', [])
+app
     .directive('image', function($q) {
         'use strict'
 
@@ -29,6 +29,7 @@ angular.module('imageupload', [])
 
             var height = origImage.height;
             var width = origImage.width;
+            var file = origImage.folder;
 
             // calculate the width and height, constraining the proportions
             if (width > height) {
@@ -46,20 +47,32 @@ angular.module('imageupload', [])
             canvas.width = width;
             canvas.height = height;
 
+
             //draw image on canvas
             var ctx = canvas.getContext("2d");
             ctx.drawImage(origImage, 0, 0, width, height);
 
-            // get the data from canvas as 70% jpg (or specified type).
-            return canvas.toDataURL(type, quality);
+            // // get the data from canvas as 70% jpg (or specified type).
+            // return canvas.toDataURL(type, quality);
+
+            var dataURL = canvas.toDataURL(type, quality);
+
+            var imageEdit = {
+                data: dataURL,
+                name: file.name,
+                type: file.type
+            }
+
+            return imageEdit;
         };
 
-        var createImage = function(url, callback) {
+        var createImage = function(url, file, callback) {
             var image = new Image();
             image.onload = function() {
                 callback(image);
             };
             image.src = url;
+            image.folder = file;
         };
 
         var fileToDataURL = function (file) {
@@ -85,11 +98,15 @@ angular.module('imageupload', [])
             link: function postLink(scope, element, attrs, ctrl) {
 
                 var doResizing = function(imageResult, callback) {
-                    createImage(imageResult.url, function(image) {
+                    createImage(imageResult.url, imageResult.file, function(image) {
                         var dataURL = resizeImage(image, scope);
-                        imageResult.resized = {
-                            dataURL: dataURL,
-                            type: dataURL.match(/:(.+\/.+);/)[1],
+                        imageResult = {
+                            url: dataURL.data,
+                            name: dataURL.name,
+                            type:dataURL.type,
+                            resize: true
+                           // dataURL: dataURL.file.canvas,
+                           //  type: dataURL.file.canvas.match(/:(.+\/.+);/)[1]
                         };
                         callback(imageResult);
                     });
@@ -116,12 +133,13 @@ angular.module('imageupload', [])
                         //create a result object for each file in files
                         var imageResult = {
                             file: files[i],
+                            name: files[i].name,
                             url: URL.createObjectURL(files[i])
                         };
 
-                        fileToDataURL(files[i]).then(function (dataURL) {
-                            imageResult.dataURL = dataURL;
-                        });
+                        // fileToDataURL(files[i]).then(function (dataURL) {
+                        //     imageResult.dataURL = dataURL;
+                        // });
 
                         if(scope.resizeMaxHeight || scope.resizeMaxWidth) { //resize image
                             doResizing(imageResult, function(imageResult) {

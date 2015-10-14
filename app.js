@@ -2,6 +2,7 @@ var express = require('express');
 var http    = require('http');
 var path    = require('path');
 var fs      = require('fs');
+var fabric = require('fabric').fabric;
 
 
 var app = express();
@@ -18,7 +19,8 @@ app.get('/', function(req, res){
 });
 
 app.post('/upload', function(req, res) {
-    var image =  req.files.image;
+    console.log(req.files)
+    var image = req.files.image;
     var newImageLocation = path.join(__dirname, 'public/images', image.name);
     
     fs.readFile(image.path, function(err, data) {
