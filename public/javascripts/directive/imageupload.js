@@ -47,17 +47,13 @@ app
             canvas.width = width;
             canvas.height = height;
 
-
-            //draw image on canvas
             var ctx = canvas.getContext("2d");
             ctx.drawImage(origImage, 0, 0, width, height);
-
-            // // get the data from canvas as 70% jpg (or specified type).
-            // return canvas.toDataURL(type, quality);
 
             var dataURL = canvas.toDataURL(type, quality);
 
             var imageEdit = {
+                file: file,
                 data: dataURL,
                 name: file.name,
                 type: file.type
@@ -75,17 +71,6 @@ app
             image.folder = file;
         };
 
-        var fileToDataURL = function (file) {
-            var deferred = $q.defer();
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                deferred.resolve(e.target.result);
-            };
-            reader.readAsDataURL(file);
-            return deferred.promise;
-        };
-
-
         return {
             restrict: 'A',
             scope: {
@@ -101,12 +86,11 @@ app
                     createImage(imageResult.url, imageResult.file, function(image) {
                         var dataURL = resizeImage(image, scope);
                         imageResult = {
-                            url: dataURL.data,
+                            canvasURL: dataURL.data,
                             name: dataURL.name,
                             type:dataURL.type,
-                            resize: true
-                           // dataURL: dataURL.file.canvas,
-                           //  type: dataURL.file.canvas.match(/:(.+\/.+);/)[1]
+                            resize: true,
+                            originURL: URL.createObjectURL(dataURL.file)
                         };
                         callback(imageResult);
                     });
@@ -114,7 +98,7 @@ app
 
                 var applyScope = function(imageResult) {
                     scope.$apply(function() {
-                        //console.log(imageResult);
+                            console.log(imageResult);
                         if(attrs.multiple)
                             scope.image.push(imageResult);
                         else
@@ -137,16 +121,12 @@ app
                             url: URL.createObjectURL(files[i])
                         };
 
-                        // fileToDataURL(files[i]).then(function (dataURL) {
-                        //     imageResult.dataURL = dataURL;
-                        // });
-
                         if(scope.resizeMaxHeight || scope.resizeMaxWidth) { //resize image
                             doResizing(imageResult, function(imageResult) {
                                 applyScope(imageResult);
                             });
                         }
-                        else { //no resizing
+                        else { 
                             applyScope(imageResult);
                         }
                     }

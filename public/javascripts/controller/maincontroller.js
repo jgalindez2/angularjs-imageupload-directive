@@ -1,32 +1,6 @@
 app
     .controller('DemoCtrl', function($scope, $http) {
-        $scope.single = function(image) {
-            if (angular.isArray(image)) {
-                console.log('varias imagenes')
-                for (var i = 0; i < image.length; i++) {
-                    var formInfo = formData(image[i].file, image[i].name);
-                    post(formInfo)
-                };
-            };
-            if (image.resize) {
-
-                var binary = atob(image.url.split(',')[1]); 
-                var array = [];
-                for (var i = 0; i < binary.length; i++) {
-                    array.push(binary.charCodeAt(i));
-                }
-                var blob = new Blob([new Uint8Array(array)], {
-                    type: image.type
-                })
-                var formInfo = formData(blob, image.name);
-                post(formInfo)
-
-            } else if (angular.isObject(image) && !angular.isArray(image)) {
-                var formInfo = formData(image.file, image.name);
-                post(formInfo)
-            };
-
-            function formData(file, name){
+            function formData(file, name) {
                 var form = new FormData();
                 form.append('image', file, name);
                 return form;
@@ -39,10 +13,47 @@ app
                     },
                     transformRequest: angular.identity
                 }).success(function(result) {
-                    console.log('funciona')
-                    $scope.uploadedImgSrc = result.src;
-                    $scope.sizeInBytes = result.size;
+                    console.log('Imagen Guardada.')
                 });
             }
+
+            function binaryDayta(url, imageType) {
+                var binary = atob(url.split(',')[1]);
+                var array = [];
+                for (var i = 0; i < binary.length; i++) {
+                    array.push(binary.charCodeAt(i));
+                }
+                var blob = new Blob([new Uint8Array(array)], {
+                    type: imageType
+                })
+                return blob;
+            }
+
+        $scope.multipleImg = function(image) {
+            for (var i = 0; i < image.length; i++) {
+                var formInfo = formData(image[i].file, image[i].name);
+                post(formInfo)
+            };
+        }
+
+        $scope.multipleImgResize = function(image) {
+            for (var i = 0; i < image.length; i++) {
+                var blobData = binaryData(image[i].canvasURL)
+                var formInfo = formData(blobData, image[i].name);
+                post(formInfo)
+            };
+        }
+
+        $scope.singleImg = function(image) {
+            var formInfo = formData(image.file, image.name);
+            post(formInfo)
         };
+
+        $scope.singleImg2 = function(image){
+            var blobData = binaryData(image.canvasURL, image.type)
+            var formInfo = formData(blobData, image.name);
+                post(formInfo)
+        }
+
+
     });
