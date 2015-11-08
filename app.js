@@ -19,7 +19,6 @@ app.get('/', function(req, res){
 });
 
 app.post('/upload', function(req, res) {
-    console.log(req.files)
     var image = req.files.image;
     var newImageLocation = path.join(__dirname, 'public/images', image.name);
     
